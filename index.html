@@ -16,11 +16,11 @@
     :root {
       --primary: #2563eb; 
       --primary-soft: #dbeafe; 
-      --background: #f8fafc; /* Beautiful off-white with sky blue reflections */
+      --background: #f8fafc;
       --surface: #ffffff;
       --text-main: #0f172a;
       --text-muted: #64748b;
-      --border-color: #0f172a; /* Strong cartoon outline */
+      --border-color: #0f172a;
       --border-width: 2.5px;
       --radius-sm: 12px;
       --radius-md: 20px;
@@ -43,8 +43,8 @@
       background-color: var(--background);
       color: var(--text-main);
       line-height: 1.5;
-      padding-top: 80px; /* Offset for curved header */
-      padding-bottom: 90px; /* Offset for curved bottom navigation */
+      padding-top: 80px;
+      padding-bottom: 90px;
       overflow-x: hidden;
       position: relative;
       min-height: 100vh;
@@ -129,6 +129,57 @@
       text-transform: uppercase;
       letter-spacing: 0.5px;
       margin-top: 2px;
+    }
+
+    /* User Zone for Authentication */
+    .user-zone {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .login-btn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--surface);
+      color: var(--text-main);
+      border: 2px solid var(--border-color);
+      padding: 6px 14px;
+      font-size: 11px;
+      font-weight: 900;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      text-transform: uppercase;
+      transition: var(--transition);
+      box-shadow: 2px 2px 0px var(--border-color);
+    }
+
+    .login-btn:hover {
+      background: var(--primary-soft);
+      transform: translate(-1px, -1px);
+      box-shadow: 3px 3px 0px var(--border-color);
+    }
+
+    .login-btn:active {
+      transform: translate(1px, 1px);
+      box-shadow: 1px 1px 0px var(--border-color);
+    }
+
+    .user-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border: 2px solid var(--border-color);
+      object-fit: cover;
+      cursor: pointer;
+      box-shadow: 2px 2px 0px var(--border-color);
+      transition: var(--transition);
+    }
+
+    .user-avatar:hover {
+      transform: scale(1.05);
+      box-shadow: 3px 3px 0px var(--border-color);
     }
 
     /* ==========================================================================
@@ -299,7 +350,7 @@
        ========================================================================== */
     .courses-grid {
       display: grid;
-      grid-template-columns: repeat(2, 1fr); /* 2 Columns on mobile for compact vertical experience */
+      grid-template-columns: repeat(2, 1fr);
       gap: 16px;
     }
 
@@ -332,11 +383,10 @@
       box-shadow: var(--shadow-cartoon-hover);
     }
 
-    /* Portrait 9:16 Aspect Ratio */
     .thumbnail-container {
       position: relative;
       width: 100%;
-      padding-top: 177.78%; /* 9:16 Aspect Ratio */
+      padding-top: 177.78%;
       background-color: var(--primary-soft);
       overflow: hidden;
       border-bottom: var(--border-width) solid var(--border-color);
@@ -427,7 +477,6 @@
       stroke-width: 2.5;
     }
 
-    /* PLAYFUL CARTOON PRIMARY BUTTON */
     .btn-primary {
       display: inline-flex;
       align-items: center;
@@ -469,7 +518,7 @@
       left: 0;
       width: 100%;
       height: 100%;
-      background: var(--background); /* Match page background so it feels like navigation */
+      background: var(--background);
       z-index: 2000;
       display: flex;
       justify-content: center;
@@ -477,7 +526,7 @@
       opacity: 0;
       pointer-events: none;
       transition: opacity 0.25s ease, transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-      transform: translateX(100%); /* Slide horizontally like a mobile view router */
+      transform: translateX(100%);
     }
 
     .modal-overlay.active {
@@ -543,7 +592,6 @@
       color: var(--text-main);
     }
 
-    /* 9:16 aspect vertical players inside the new details view */
     .player-outer-wrapper {
       max-width: 480px;
       width: 100%;
@@ -555,7 +603,7 @@
       width: 100%;
       background: #000000;
       position: relative;
-      padding-top: 177.78%; /* Strictly 9:16 Vertical Video ratio */
+      padding-top: 177.78%;
       border: var(--border-width) solid var(--border-color);
       border-radius: var(--radius-md);
       box-shadow: var(--shadow-cartoon);
@@ -777,14 +825,9 @@
         <h1>AZAD SKILL</h1>
         <p>Learn Skills. Build Future.</p>
       </div>
+      <div class="user-zone" id="userZone">
+        </div>
     </div>
-    
-    <div id="authArea">
-  <button class="btn-primary" onclick="loginWithGoogle()">
-  Login
-</button>
-</div>
-    
   </header>
 
   <main class="container">
@@ -880,17 +923,13 @@
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
     import { getFirestore, collection, getDocs, query, orderBy, where } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
-  import {
-  getAuth,
-  GoogleAuthProvider,
-  signInWithRedirect,
-  getRedirectResult,
-  onAuthStateChanged,
-  signOut
-} from "https://www.gstatic.com/firebasejs/12.14.0/firebase-auth.js";
+    import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-auth.js";
+
     // Scope cache drivers
     let dbAzad;
     let dbBiharSin;
+    let authAzad;
+    let googleProvider;
     let localCategories = [];
     let localCourses = [];
     let activeCategoryId = 'all';
@@ -898,8 +937,6 @@
     let adsList = [];
     let adIndex = 0;
     let adInterval = null;
-  let auth;
-let currentUser = null;
 
     // Azad Skill Platform Configuration
     const firebaseConfigAzad = {
@@ -926,9 +963,7 @@ let currentUser = null;
      * Initializes structural pipeline connections
      */
     async function initApp() {
-        
       initializeFirebase();
-      setupAuth();
       setupSearchBinds();
       
       showLoading('categories');
@@ -953,19 +988,70 @@ let currentUser = null;
     }
 
     /**
-     * Set up Dual firestore links
+     * Set up Dual firestore links and Authentication
      */
     function initializeFirebase() {
       try {
         const appAzad = initializeApp(firebaseConfigAzad, "azadSkillApp");
         dbAzad = getFirestore(appAzad);
-         auth = getAuth(appAzad);
-console.log("Auth Ready:", auth);
+        
+        // Initialize Auth
+        authAzad = getAuth(appAzad);
+        googleProvider = new GoogleAuthProvider();
+        setupAuthListener();
+
         const appBihar = initializeApp(firebaseConfigBiharSin, "biharSinApp");
         dbBiharSin = getFirestore(appBihar);
       } catch (error) {
         console.error("Failure preparing multi-firebase client setup: ", error);
         showError("Initialization error.");
+      }
+    }
+
+    /**
+     * Authentication Listener & UI Updates
+     */
+    function setupAuthListener() {
+      onAuthStateChanged(authAzad, (user) => {
+        const userZone = document.getElementById('userZone');
+        if (user) {
+          // User is signed in
+          userZone.innerHTML = `
+            <img src="${user.photoURL || 'https://via.placeholder.com/36'}" alt="User Avatar" class="user-avatar" title="Logout: ${user.displayName}" onclick="window.handleLogout()">
+          `;
+        } else {
+          // User is signed out
+          userZone.innerHTML = `
+            <button class="login-btn" onclick="window.handleLogin()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M15 12H3"/></svg>
+              Login
+            </button>
+          `;
+        }
+      });
+    }
+
+    /**
+     * Google Login Trigger
+     */
+    async function handleLogin() {
+      try {
+        await signInWithPopup(authAzad, googleProvider);
+      } catch (error) {
+        console.error("Login Error: ", error);
+        showError("Google Authentication Failed. Please try again.");
+      }
+    }
+
+    /**
+     * Logout Trigger
+     */
+    async function handleLogout() {
+      try {
+        await signOut(authAzad);
+      } catch (error) {
+        console.error("Logout Error: ", error);
+        showError("Logout failed.");
       }
     }
 
@@ -1024,7 +1110,6 @@ console.log("Auth Ready:", auth);
           const start = data.startDate || "0000-00-00";
           const end = data.endDate || "9999-12-31";
           
-          // Image-only campaigns: Ensure there is mediaUrl and NO videoUrl
           if (todayStr >= start && todayStr <= end && data.mediaUrl && !data.videoUrl) {
             adsList.push(data);
           }
@@ -1082,20 +1167,16 @@ console.log("Auth Ready:", auth);
     function getCategorySVG(name) {
       const iconName = (name || '').toLowerCase();
       
-      // Development categories
       if (iconName.includes('web') || iconName.includes('dev') || iconName.includes('code') || iconName.includes('tech')) {
         return `<svg class="category-icon-svg" viewBox="0 0 24 24"><path d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
       }
-      // Design / Arts
       if (iconName.includes('design') || iconName.includes('creative') || iconName.includes('art') || iconName.includes('ui')) {
         return `<svg class="category-icon-svg" viewBox="0 0 24 24"><path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z"/><path d="M12 6V12L16 14" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
       }
-      // Marketing / Business
       if (iconName.includes('market') || iconName.includes('business') || iconName.includes('finance') || iconName.includes('seo')) {
         return `<svg class="category-icon-svg" viewBox="0 0 24 24"><path d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
       }
       
-      // Fallback Book SVG Icon
       return `<svg class="category-icon-svg" viewBox="0 0 24 24"><path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
     }
 
@@ -1239,12 +1320,11 @@ console.log("Auth Ready:", auth);
     }
 
     /**
-     * Resolves stream types (UPDATED: Added support for YouTube Shorts)
+     * Resolves stream types
      */
     function parseVideoUrl(url) {
       if (!url) return { type: 'unknown', url: '' };
       
-      // Update regex to detect 'shorts/' links as well
       const ytRegex = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=|shorts\/)([^#\&\?]*).*/;
       const match = url.match(ytRegex);
       
@@ -1263,13 +1343,16 @@ console.log("Auth Ready:", auth);
     }
 
     /**
-     * Transitions fullscreen to display dynamic detail paths (Simulated sub-page router)
+     * Transitions fullscreen to display dynamic detail paths
      */
     function openCourseModal(courseId) {
-      if(!currentUser){
-  showError("Please login first");
-  return;
-}
+      // Login Check (Optional feature if you want to restrict content to logged in users)
+      /* if (!authAzad.currentUser) {
+        showError("Please Login to view course details!");
+        return;
+      } 
+      */
+
       const course = localCourses.find(c => c.id === courseId);
       if (!course) {
         showError("Requested course records offline.");
@@ -1279,7 +1362,6 @@ console.log("Auth Ready:", auth);
       const modal = document.getElementById('courseModal');
       const videoSection = document.getElementById('modalVideoSection');
       
-      // Update Detail UI Tags
       document.getElementById('modalHeaderTitle').innerText = `${course.title || 'Course Details'}`;
       document.getElementById('modalTitle').innerText = course.title || 'Untitled';
       document.getElementById('modalCategoryBadge').innerText = getCategoryName(course.categoryId);
@@ -1287,14 +1369,12 @@ console.log("Auth Ready:", auth);
       document.getElementById('modalDuration').innerText = course.duration || 'Flexible duration';
       document.getElementById('modalDescription').innerText = course.description || '';
 
-      // UPDATED: Check multiple possible database keys incase name changes in firestore
       const activeVideoUrl = course.videoUrl || course.video || course.url || course.link;
       const videoData = parseVideoUrl(activeVideoUrl);
       
       if (videoData.type === 'youtube') {
         videoSection.innerHTML = `<iframe src="${videoData.embedUrl}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
       } else if (videoData.type === 'mp4') {
-        // UPDATED: Added 'muted' attribute. Modern browsers block autoplay without it.
         videoSection.innerHTML = `
           <video controls autoplay muted playsinline style="width:100%; height:100%;">
             <source src="${videoData.url}" type="video/mp4">
@@ -1304,7 +1384,6 @@ console.log("Auth Ready:", auth);
         videoSection.innerHTML = `<div style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); color:#ffffff; font-size:13px; font-weight:700; text-align:center; width:80%;">No playable vertical media stream configurations mapped to this record.</div>`;
       }
 
-      // Smooth horizontal viewport page overlay transition
       modal.classList.add('active');
       document.body.style.overflow = 'hidden';
     }
@@ -1319,7 +1398,6 @@ console.log("Auth Ready:", auth);
       modal.classList.remove('active');
       document.body.style.overflow = '';
       
-      // Clear player to immediately mute active audio output streams
       videoSection.innerHTML = '';
     }
 
@@ -1372,82 +1450,14 @@ console.log("Auth Ready:", auth);
     window.openCourseModal = openCourseModal;
     window.closeCourseModal = closeCourseModal;
     window.openAboutDialog = openAboutDialog;
-
     
-    
-  //login system
-  
-  async function loginWithGoogle() {
-  try {
-    const provider = new GoogleAuthProvider();
-    await signInWithRedirect(auth, provider);
-  } catch (err) {
-    console.error(err);
-    showError("Login failed");
-  }
-}
-  // logout system
-  async function logoutUser() {
-  try {
-    await signOut(auth);
-  } catch (err) {
-    console.error(err);
-  }
-}
-  //User State Listener
-  function setupAuth() {
-    
-getRedirectResult(auth)
-  .then((result) => {
-    if (result?.user) {
-      console.log("Login Success:", result.user.displayName);
-    }
-  })
-  .catch((error) => {
-    console.error(error);
-  });
-    
-  onAuthStateChanged(auth, (user) => {
+    // Set Window scope functions for Authentication
+    window.handleLogin = handleLogin;
+    window.handleLogout = handleLogout;
 
-  console.log("Auth User:", user);
+    // Launch Driver
+    window.addEventListener('DOMContentLoaded', initApp);
 
-  const authArea = document.getElementById("authArea");
-
-  if(user){
-
-    alert("Login Success: " + user.displayName);
-
-    currentUser = user;
-
-    authArea.innerHTML = `
-      <div style="display:flex;align-items:center;gap:8px;">
-        <img
-          src="${user.photoURL}"
-          style="width:40px;height:40px;border-radius:50%;border:2px solid #000;">
-          
-        <button class="btn-primary" onclick="logoutUser()">
-          Logout
-        </button>
-      </div>
-    `;
-
-  } else {
-
-    currentUser = null;
-
-    authArea.innerHTML = `
-      <button class="btn-primary" onclick="loginWithGoogle()">
-        Login
-      </button>
-    `;
-  }
-
-});
-  }
-  window.loginWithGoogle = loginWithGoogle;
-window.logoutUser = logoutUser;
-  
-  window.addEventListener('DOMContentLoaded', initApp);
   </script>
 </body>
 </html>
