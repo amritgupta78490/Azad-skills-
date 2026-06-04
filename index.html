@@ -671,7 +671,7 @@
 
     /* ==========================================================================
        10. CARTOONISH BOTTOM NAVIGATION BAR
-       ========================================================================== */
+       ========================================================================= */
     .bottom-nav {
       position: fixed;
       bottom: 12px;
@@ -854,7 +854,7 @@
         Categories
       </h3>
       <div class="categories-grid" id="categoriesContainer">
-        </div>
+      </div>
     </section>
 
     <section style="padding-top: 10px; padding-bottom: 20px;">
@@ -864,7 +864,7 @@
       </h3>
       <div id="coursesStatusContainer"></div>
       <div class="courses-grid" id="coursesContainer">
-        </div>
+      </div>
     </section>
 
   </main>
@@ -872,7 +872,7 @@
   <div class="modal-overlay" id="courseModal">
     <div class="modal-container">
       <div class="modal-header">
-        <button class="modal-close-btn" onclick="closeCourseModal()" aria-label="Back">
+        <button class="modal-close-btn" onclick="window.closeCourseModal()" aria-label="Back">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M19 12H5M12 19l-7-7 7-7" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </button>
         <span class="modal-nav-title" id="modalHeaderTitle">Back to Classroom</span>
@@ -880,7 +880,7 @@
       
       <div class="player-outer-wrapper">
         <div class="video-section" id="modalVideoSection">
-          </div>
+        </div>
       </div>
 
       <div class="modal-body">
@@ -921,9 +921,10 @@
   </nav>
 
   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
-    import { getFirestore, collection, getDocs, query, orderBy, where } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
-    import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-auth.js";
+    // STABLE IMMUTABLE PRODUCTION IMPORTS (Fixes CDN 404 block crashes)
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
+    import { getFirestore, collection, getDocs, query, orderBy, where } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
+    import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-auth.js";
 
     // Scope cache drivers
     let dbAzad;
@@ -937,6 +938,14 @@
     let adsList = [];
     let adIndex = 0;
     let adInterval = null;
+
+    // Window global setup bindings registered early to protect against crash zones
+    window.filterCourses = filterCourses;
+    window.openCourseModal = openCourseModal;
+    window.closeCourseModal = closeCourseModal;
+    window.openAboutDialog = openAboutDialog;
+    window.handleLogin = handleLogin;
+    window.handleLogout = handleLogout;
 
     // Azad Skill Platform Configuration
     const firebaseConfigAzad = {
@@ -969,18 +978,16 @@
       showLoading('categories');
       showLoading('courses');
 
+      // Async wrapper prevents database failures from locking up layout execution
       try {
         await Promise.all([
-          loadCategories(),
-          loadCourses(),
-          fetchBannerAds()
+          loadCategories().catch(e => console.error("Categories broken:", e)),
+          loadCourses().catch(e => console.error("Courses broken:", e)),
+          fetchBannerAds().catch(e => console.error("Ads bypassed:", e))
         ]);
       } catch (err) {
         console.error("Connectivity Exception: ", err);
-        showError("Local databases parsing failure. Verify connection integrity.");
-        hideLoading('categories');
-        hideLoading('courses');
-        return;
+        showError("Data parsing delayed. Check system rules.");
       }
 
       renderCategories();
@@ -995,16 +1002,18 @@
         const appAzad = initializeApp(firebaseConfigAzad, "azadSkillApp");
         dbAzad = getFirestore(appAzad);
         
-        // Initialize Auth
+        // Initialize Auth securely
         authAzad = getAuth(appAzad);
         googleProvider = new GoogleAuthProvider();
+        googleProvider.setCustomParameters({ prompt: 'select_account' });
+        
         setupAuthListener();
 
         const appBihar = initializeApp(firebaseConfigBiharSin, "biharSinApp");
         dbBiharSin = getFirestore(appBihar);
       } catch (error) {
         console.error("Failure preparing multi-firebase client setup: ", error);
-        showError("Initialization error.");
+        showError("Firebase setup failed. Config strings verification recommended.");
       }
     }
 
@@ -1012,15 +1021,16 @@
      * Authentication Listener & UI Updates
      */
     function setupAuthListener() {
+      if(!authAzad) return;
       onAuthStateChanged(authAzad, (user) => {
         const userZone = document.getElementById('userZone');
+        if (!userZone) return;
+        
         if (user) {
-          // User is signed in
           userZone.innerHTML = `
-            <img src="${user.photoURL || 'https://via.placeholder.com/36'}" alt="User Avatar" class="user-avatar" title="Logout: ${user.displayName}" onclick="window.handleLogout()">
+            <img src="${user.photoURL || 'https://via.placeholder.com/36'}" alt="User Avatar" class="user-avatar" title="Click to Logout: ${user.displayName}" onclick="window.handleLogout()">
           `;
         } else {
-          // User is signed out
           userZone.innerHTML = `
             <button class="login-btn" onclick="window.handleLogin()">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M15 12H3"/></svg>
@@ -1032,14 +1042,30 @@
     }
 
     /**
-     * Google Login Trigger
+     * Google Login Trigger (With actionable client diagnostic reporting cascades)
      */
     async function handleLogin() {
       try {
+        if (!authAzad || !googleProvider) {
+          showError("Auth modules initialized nahi hue hain. Kindly check connection.");
+          return;
+        }
         await signInWithPopup(authAzad, googleProvider);
       } catch (error) {
-        console.error("Login Error: ", error);
-        showError("Google Authentication Failed. Please try again.");
+        console.error("Login Error details: ", error);
+        
+        // Actionable developer alerts mapped into standard system states
+        if (error.code === 'auth/operation-not-supported-in-this-environment') {
+          showError("Error: File ko double-click karke mat kholo! Run via VS Code Live Server (http://localhost).");
+        } else if (error.code === 'auth/unauthorized-domain') {
+          showError("Error: Domain authorized nahi hai. Firebase Console > Auth > Settings me domain add karein.");
+        } else if (error.code === 'auth/popup-blocked') {
+          showError("Error: Browser ne popup block kiya! Browser URL bar me clean permissions allow karein.");
+        } else if (error.code === 'auth/configuration-not-found') {
+          showError("Error: Google Provider Firebase Auth settings me enabled nahi hai!");
+        } else {
+          showError("Auth Trace: " + error.message);
+        }
       }
     }
 
@@ -1048,10 +1074,13 @@
      */
     async function handleLogout() {
       try {
-        await signOut(authAzad);
+        if(!authAzad) return;
+        if(confirm("Kya aap Logout karna chahte hain?")) {
+          await signOut(authAzad);
+        }
       } catch (error) {
         console.error("Logout Error: ", error);
-        showError("Logout failed.");
+        showError("Signout broken sequence.");
       }
     }
 
@@ -1059,67 +1088,56 @@
      * Dynamically load category data
      */
     async function loadCategories() {
-      try {
-        const categoriesRef = collection(dbAzad, "categories");
-        const q = query(categoriesRef, orderBy("order", "asc"));
-        const querySnapshot = await getDocs(q);
-        
-        localCategories = [];
-        querySnapshot.forEach((doc) => {
-          localCategories.push({ id: doc.id, ...doc.data() });
-        });
-      } catch (error) {
-        console.error("Categories fetch failed: ", error);
-        throw error;
-      }
+      if(!dbAzad) return;
+      const categoriesRef = collection(dbAzad, "categories");
+      const q = query(categoriesRef, orderBy("order", "asc"));
+      const querySnapshot = await getDocs(q);
+      
+      localCategories = [];
+      querySnapshot.forEach((doc) => {
+        localCategories.push({ id: doc.id, ...doc.data() });
+      });
     }
 
     /**
      * Dynamically load course tracks
      */
     async function loadCourses() {
-      try {
-        const coursesRef = collection(dbAzad, "courses");
-        const q = query(coursesRef, orderBy("createdAt", "desc"));
-        const querySnapshot = await getDocs(q);
-        
-        localCourses = [];
-        querySnapshot.forEach((doc) => {
-          localCourses.push({ id: doc.id, ...doc.data() });
-        });
-      } catch (error) {
-        console.error("Courses fetch failed: ", error);
-        throw error;
-      }
+      if(!dbAzad) return;
+      const coursesRef = collection(dbAzad, "courses");
+      const q = query(coursesRef, orderBy("createdAt", "desc"));
+      const querySnapshot = await getDocs(q);
+      
+      localCourses = [];
+      querySnapshot.forEach((doc) => {
+        localCourses.push({ id: doc.id, ...doc.data() });
+      });
     }
 
     /**
      * Banner advertisement extraction directly mapped from the Bihar Sin project
      */
     async function fetchBannerAds() {
-      try {
-        const adsCollection = collection(dbBiharSin, "artifacts", "bihar-sin-portal", "public", "data", "ads");
-        const q = query(adsCollection, where("isActive", "==", true));
-        const querySnapshot = await getDocs(q);
+      if(!dbBiharSin) return;
+      const adsCollection = collection(dbBiharSin, "artifacts", "bihar-sin-portal", "public", "data", "ads");
+      const q = query(adsCollection, where("isActive", "==", true));
+      const querySnapshot = await getDocs(q);
+      
+      adsList = [];
+      const todayStr = new Date().toISOString().split('T')[0];
+
+      querySnapshot.forEach((doc) => {
+        const data = doc.data();
+        const start = data.startDate || "0000-00-00";
+        const end = data.endDate || "9999-12-31";
         
-        adsList = [];
-        const todayStr = new Date().toISOString().split('T')[0];
-
-        querySnapshot.forEach((doc) => {
-          const data = doc.data();
-          const start = data.startDate || "0000-00-00";
-          const end = data.endDate || "9999-12-31";
-          
-          if (todayStr >= start && todayStr <= end && data.mediaUrl && !data.videoUrl) {
-            adsList.push(data);
-          }
-        });
-
-        if (adsList.length > 0) {
-          startAdRotation();
+        if (todayStr >= start && todayStr <= end && data.mediaUrl && !data.videoUrl) {
+          adsList.push(data);
         }
-      } catch (error) {
-        console.warn("Bihar-sin integration bypass: ", error);
+      });
+
+      if (adsList.length > 0) {
+        startAdRotation();
       }
     }
 
@@ -1134,6 +1152,7 @@
       renderAd(adIndex);
 
       if (adsList.length > 1) {
+        if(adInterval) clearInterval(adInterval);
         adInterval = setInterval(() => {
           adIndex = (adIndex + 1) % adsList.length;
           renderAd(adIndex);
@@ -1147,7 +1166,7 @@
     function renderAd(index) {
       const img = document.getElementById('adDisplayImg');
       const link = document.getElementById('adClickLink');
-      if (!img || !link) return;
+      if (!img || !link || !adsList[index]) return;
 
       const campaign = adsList[index];
       img.style.opacity = '0';
@@ -1177,7 +1196,7 @@
         return `<svg class="category-icon-svg" viewBox="0 0 24 24"><path d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
       }
       
-      return `<svg class="category-icon-svg" viewBox="0 0 24 24"><path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+      return `<svg class="category-icon-svg" viewBox="0 0 24 24"><path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
     }
 
     /**
@@ -1346,13 +1365,6 @@
      * Transitions fullscreen to display dynamic detail paths
      */
     function openCourseModal(courseId) {
-      // Login Check (Optional feature if you want to restrict content to logged in users)
-      /* if (!authAzad.currentUser) {
-        showError("Please Login to view course details!");
-        return;
-      } 
-      */
-
       const course = localCourses.find(c => c.id === courseId);
       if (!course) {
         showError("Requested course records offline.");
@@ -1361,6 +1373,7 @@
 
       const modal = document.getElementById('courseModal');
       const videoSection = document.getElementById('modalVideoSection');
+      if(!modal || !videoSection) return;
       
       document.getElementById('modalHeaderTitle').innerText = `${course.title || 'Course Details'}`;
       document.getElementById('modalTitle').innerText = course.title || 'Untitled';
@@ -1394,10 +1407,10 @@
     function closeCourseModal() {
       const modal = document.getElementById('courseModal');
       const videoSection = document.getElementById('modalVideoSection');
+      if(!modal || !videoSection) return;
       
       modal.classList.remove('active');
       document.body.style.overflow = '';
-      
       videoSection.innerHTML = '';
     }
 
@@ -1423,10 +1436,6 @@
       }
     }
 
-    function hideLoading(target) {
-      // Clean dynamic callback overrides in async sequences
-    }
-
     /**
      * System banner error updates
      */
@@ -1440,24 +1449,11 @@
           <span>${message}</span>
         </div>`;
       
-      setTimeout(() => {
-        container.innerHTML = '';
-      }, 7000);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
-    // Set Window scope functions for inline DOM click events
-    window.filterCourses = filterCourses;
-    window.openCourseModal = openCourseModal;
-    window.closeCourseModal = closeCourseModal;
-    window.openAboutDialog = openAboutDialog;
-    
-    // Set Window scope functions for Authentication
-    window.handleLogin = handleLogin;
-    window.handleLogout = handleLogout;
-
-    // Launch Driver
+    // Launch Driver Sequence safely
     window.addEventListener('DOMContentLoaded', initApp);
-
   </script>
 </body>
 </html>
