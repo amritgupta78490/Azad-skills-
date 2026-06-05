@@ -16,11 +16,11 @@
     :root {
       --primary: #2563eb; 
       --primary-soft: #dbeafe; 
-      --background: #f8fafc;
+      --background: #f8fafc; /* Beautiful off-white with sky blue reflections */
       --surface: #ffffff;
       --text-main: #0f172a;
       --text-muted: #64748b;
-      --border-color: #0f172a;
+      --border-color: #0f172a; /* Strong cartoon outline */
       --border-width: 2.5px;
       --radius-sm: 12px;
       --radius-md: 20px;
@@ -43,8 +43,8 @@
       background-color: var(--background);
       color: var(--text-main);
       line-height: 1.5;
-      padding-top: 80px;
-      padding-bottom: 90px;
+      padding-top: 80px; /* Offset for curved header */
+      padding-bottom: 90px; /* Offset for curved bottom navigation */
       overflow-x: hidden;
       position: relative;
       min-height: 100vh;
@@ -131,59 +131,8 @@
       margin-top: 2px;
     }
 
-    /* User Zone for Authentication */
-    .user-zone {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .login-btn {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      background: var(--surface);
-      color: var(--text-main);
-      border: 2px solid var(--border-color);
-      padding: 6px 14px;
-      font-size: 11px;
-      font-weight: 900;
-      border-radius: var(--radius-sm);
-      cursor: pointer;
-      text-transform: uppercase;
-      transition: var(--transition);
-      box-shadow: 2px 2px 0px var(--border-color);
-    }
-
-    .login-btn:hover {
-      background: var(--primary-soft);
-      transform: translate(-1px, -1px);
-      box-shadow: 3px 3px 0px var(--border-color);
-    }
-
-    .login-btn:active {
-      transform: translate(1px, 1px);
-      box-shadow: 1px 1px 0px var(--border-color);
-    }
-
-    .user-avatar {
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
-      border: 2px solid var(--border-color);
-      object-fit: cover;
-      cursor: pointer;
-      box-shadow: 2px 2px 0px var(--border-color);
-      transition: var(--transition);
-    }
-
-    .user-avatar:hover {
-      transform: scale(1.05);
-      box-shadow: 3px 3px 0px var(--border-color);
-    }
-
     /* ==========================================================================
-       5. REAL-TIME SEARCH WRAPPER
+       5. REAL-TIME SEARCH WRAPPER & AUTH UI
        ========================================================================== */
     .search-wrapper {
       margin: 20px auto;
@@ -222,6 +171,26 @@
       color: var(--text-main);
       background: transparent;
       font-weight: 600;
+    }
+
+    /* Auth Modal Input Fixes */
+    .auth-input-box {
+      width: 100%;
+      margin-bottom: 12px;
+      box-sizing: border-box;
+      background: var(--surface);
+      border: var(--border-width) solid var(--border-color);
+      padding: 12px 16px;
+      border-radius: var(--radius-md);
+      font-size: 14px;
+      font-weight: 600;
+      outline: none;
+      box-shadow: var(--shadow-cartoon);
+      transition: var(--transition);
+    }
+    .auth-input-box:focus {
+      transform: translate(-2px, -2px);
+      box-shadow: var(--shadow-cartoon-hover);
     }
 
     /* ==========================================================================
@@ -350,7 +319,7 @@
        ========================================================================== */
     .courses-grid {
       display: grid;
-      grid-template-columns: repeat(2, 1fr);
+      grid-template-columns: repeat(2, 1fr); 
       gap: 16px;
     }
 
@@ -518,7 +487,7 @@
       left: 0;
       width: 100%;
       height: 100%;
-      background: var(--background);
+      background: var(--background); 
       z-index: 2000;
       display: flex;
       justify-content: center;
@@ -526,7 +495,7 @@
       opacity: 0;
       pointer-events: none;
       transition: opacity 0.25s ease, transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-      transform: translateX(100%);
+      transform: translateX(100%); 
     }
 
     .modal-overlay.active {
@@ -603,7 +572,7 @@
       width: 100%;
       background: #000000;
       position: relative;
-      padding-top: 177.78%;
+      padding-top: 177.78%; 
       border: var(--border-width) solid var(--border-color);
       border-radius: var(--radius-md);
       box-shadow: var(--shadow-cartoon);
@@ -671,7 +640,7 @@
 
     /* ==========================================================================
        10. CARTOONISH BOTTOM NAVIGATION BAR
-       ========================================================================= */
+       ========================================================================== */
     .bottom-nav {
       position: fixed;
       bottom: 12px;
@@ -795,6 +764,7 @@
       gap: 10px;
       box-shadow: var(--shadow-cartoon);
       animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      z-index: 9999;
     }
 
     .error-banner svg {
@@ -817,6 +787,28 @@
 </head>
 <body>
 
+  <div id="authOverlay" class="modal-overlay active" style="z-index: 3000; flex-direction: column; justify-content: center; align-items: center; padding: 20px;">
+    <div style="background: var(--surface); border: var(--border-width) solid var(--border-color); border-radius: var(--radius-md); box-shadow: var(--shadow-cartoon); padding: 24px; width: 100%; max-width: 400px; text-align: center;">
+      <h2 style="font-weight: 900; margin-bottom: 8px; color: var(--primary);">AZAD SKILL</h2>
+      <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 20px; font-weight: 700; text-transform: uppercase;">Login or Sign up to learn</p>
+      
+      <div id="authErrorContainer"></div>
+
+      <input type="email" id="authEmail" placeholder="Email Address" class="auth-input-box">
+      <input type="password" id="authPassword" placeholder="Password" class="auth-input-box" style="margin-bottom: 20px;">
+      
+      <button class="btn-primary" onclick="window.handleEmailLogin()" style="width: 100%; margin-bottom: 10px; font-size: 14px; padding: 12px;">Sign In</button>
+      <button class="btn-primary" onclick="window.handleEmailSignUp()" style="width: 100%; background: var(--surface); color: var(--text-main); margin-bottom: 16px; font-size: 14px; padding: 12px;">Create Account</button>
+      
+      <div style="border-top: var(--border-width) dashed var(--border-color); margin: 16px 0;"></div>
+      
+      <button class="btn-primary" onclick="window.handleGoogleLogin()" style="width: 100%; background: #ffffff; color: #000; display: flex; gap: 10px; justify-content: center; font-size: 14px; padding: 12px;">
+        <svg width="18" height="18" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+        Sign in with Google
+      </button>
+    </div>
+  </div>
+
   <img src="https://i.ibb.co/NdNntcXc/ashok-chakra-e1426766122112.png" alt="Ashoka Chakra Background" class="chakra-bg">
 
   <header>
@@ -825,8 +817,7 @@
         <h1>AZAD SKILL</h1>
         <p>Learn Skills. Build Future.</p>
       </div>
-      <div class="user-zone" id="userZone">
-        </div>
+      <button class="btn-primary" id="logoutBtn" onclick="window.handleLogout()" style="width: auto; padding: 6px 12px; font-size: 10px; display: none;">Logout</button>
     </div>
   </header>
 
@@ -854,7 +845,7 @@
         Categories
       </h3>
       <div class="categories-grid" id="categoriesContainer">
-      </div>
+        </div>
     </section>
 
     <section style="padding-top: 10px; padding-bottom: 20px;">
@@ -864,7 +855,7 @@
       </h3>
       <div id="coursesStatusContainer"></div>
       <div class="courses-grid" id="coursesContainer">
-      </div>
+        </div>
     </section>
 
   </main>
@@ -872,7 +863,7 @@
   <div class="modal-overlay" id="courseModal">
     <div class="modal-container">
       <div class="modal-header">
-        <button class="modal-close-btn" onclick="window.closeCourseModal()" aria-label="Back">
+        <button class="modal-close-btn" onclick="closeCourseModal()" aria-label="Back">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M19 12H5M12 19l-7-7 7-7" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </button>
         <span class="modal-nav-title" id="modalHeaderTitle">Back to Classroom</span>
@@ -880,7 +871,7 @@
       
       <div class="player-outer-wrapper">
         <div class="video-section" id="modalVideoSection">
-        </div>
+          </div>
       </div>
 
       <div class="modal-body">
@@ -921,16 +912,17 @@
   </nav>
 
   <script type="module">
-    // STABLE IMMUTABLE PRODUCTION IMPORTS (Fixes CDN 404 block crashes)
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
-    import { getFirestore, collection, getDocs, query, orderBy, where } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
-    import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-auth.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
+    import { getFirestore, collection, getDocs, query, orderBy, where } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
+    
+    // Yahan Firebase Auth modules include kiye gaye hain
+    import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-auth.js";
 
     // Scope cache drivers
+    let auth;
+    const googleProvider = new GoogleAuthProvider();
     let dbAzad;
     let dbBiharSin;
-    let authAzad;
-    let googleProvider;
     let localCategories = [];
     let localCourses = [];
     let activeCategoryId = 'all';
@@ -938,14 +930,6 @@
     let adsList = [];
     let adIndex = 0;
     let adInterval = null;
-
-    // Window global setup bindings registered early to protect against crash zones
-    window.filterCourses = filterCourses;
-    window.openCourseModal = openCourseModal;
-    window.closeCourseModal = closeCourseModal;
-    window.openAboutDialog = openAboutDialog;
-    window.handleLogin = handleLogin;
-    window.handleLogout = handleLogout;
 
     // Azad Skill Platform Configuration
     const firebaseConfigAzad = {
@@ -969,175 +953,181 @@
     };
 
     /**
-     * Initializes structural pipeline connections
+     * Initializes structural pipeline connections & Auth
      */
     async function initApp() {
       initializeFirebase();
       setupSearchBinds();
-      
-      showLoading('categories');
-      showLoading('courses');
 
-      // Async wrapper prevents database failures from locking up layout execution
-      try {
-        await Promise.all([
-          loadCategories().catch(e => console.error("Categories broken:", e)),
-          loadCourses().catch(e => console.error("Courses broken:", e)),
-          fetchBannerAds().catch(e => console.error("Ads bypassed:", e))
-        ]);
-      } catch (err) {
-        console.error("Connectivity Exception: ", err);
-        showError("Data parsing delayed. Check system rules.");
-      }
+      // Check User Authentication State dynamically
+      onAuthStateChanged(auth, async (user) => {
+        if (user) {
+          // Logged In: Hide Auth Modal and show Logout btn
+          document.getElementById('authOverlay').classList.remove('active');
+          document.getElementById('logoutBtn').style.display = 'inline-flex';
+          
+          showLoading('categories');
+          showLoading('courses');
 
-      renderCategories();
-      renderCourses();
+          try {
+            await Promise.all([
+              loadCategories(),
+              loadCourses(),
+              fetchBannerAds()
+            ]);
+            renderCategories();
+            renderCourses();
+          } catch (err) {
+            console.error("Connectivity Exception: ", err);
+            showError("Local databases parsing failure. Verify connection integrity.");
+            hideLoading('categories');
+            hideLoading('courses');
+          }
+        } else {
+          // Not Logged In: Show Auth Modal and hide Logout btn
+          document.getElementById('authOverlay').classList.add('active');
+          document.getElementById('logoutBtn').style.display = 'none';
+        }
+      });
     }
 
     /**
-     * Set up Dual firestore links and Authentication
+     * Set up Dual firestore links & Auth connection
      */
     function initializeFirebase() {
       try {
         const appAzad = initializeApp(firebaseConfigAzad, "azadSkillApp");
         dbAzad = getFirestore(appAzad);
-        
-        // Initialize Auth securely
-        authAzad = getAuth(appAzad);
-        googleProvider = new GoogleAuthProvider();
-        googleProvider.setCustomParameters({ prompt: 'select_account' });
-        
-        setupAuthListener();
+        auth = getAuth(appAzad); // Setup Auth
 
         const appBihar = initializeApp(firebaseConfigBiharSin, "biharSinApp");
         dbBiharSin = getFirestore(appBihar);
       } catch (error) {
         console.error("Failure preparing multi-firebase client setup: ", error);
-        showError("Firebase setup failed. Config strings verification recommended.");
+        showError("Initialization error.");
       }
     }
 
-    /**
-     * Authentication Listener & UI Updates
-     */
-    function setupAuthListener() {
-      if(!authAzad) return;
-      onAuthStateChanged(authAzad, (user) => {
-        const userZone = document.getElementById('userZone');
-        if (!userZone) return;
-        
-        if (user) {
-          userZone.innerHTML = `
-            <img src="${user.photoURL || 'https://via.placeholder.com/36'}" alt="User Avatar" class="user-avatar" title="Click to Logout: ${user.displayName}" onclick="window.handleLogout()">
-          `;
-        } else {
-          userZone.innerHTML = `
-            <button class="login-btn" onclick="window.handleLogin()">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M15 12H3"/></svg>
-              Login
-            </button>
-          `;
-        }
-      });
-    }
-
-    /**
-     * Google Login Trigger (With actionable client diagnostic reporting cascades)
-     */
-    async function handleLogin() {
+    /* --- AUTHENTICATION FUNCTIONS --- */
+    window.handleEmailLogin = async () => {
+      const email = document.getElementById('authEmail').value;
+      const pass = document.getElementById('authPassword').value;
+      if(!email || !pass) return showAuthError("Please enter email and password");
       try {
-        if (!authAzad || !googleProvider) {
-          showError("Auth modules initialized nahi hue hain. Kindly check connection.");
-          return;
-        }
-        await signInWithPopup(authAzad, googleProvider);
+        await signInWithEmailAndPassword(auth, email, pass);
       } catch (error) {
-        console.error("Login Error details: ", error);
-        
-        // Actionable developer alerts mapped into standard system states
-        if (error.code === 'auth/operation-not-supported-in-this-environment') {
-          showError("Error: File ko double-click karke mat kholo! Run via VS Code Live Server (http://localhost).");
-        } else if (error.code === 'auth/unauthorized-domain') {
-          showError("Error: Domain authorized nahi hai. Firebase Console > Auth > Settings me domain add karein.");
-        } else if (error.code === 'auth/popup-blocked') {
-          showError("Error: Browser ne popup block kiya! Browser URL bar me clean permissions allow karein.");
-        } else if (error.code === 'auth/configuration-not-found') {
-          showError("Error: Google Provider Firebase Auth settings me enabled nahi hai!");
-        } else {
-          showError("Auth Trace: " + error.message);
-        }
+        showAuthError(error.message);
       }
-    }
+    };
 
-    /**
-     * Logout Trigger
-     */
-    async function handleLogout() {
+    window.handleEmailSignUp = async () => {
+      const email = document.getElementById('authEmail').value;
+      const pass = document.getElementById('authPassword').value;
+      if(!email || !pass) return showAuthError("Please enter email and password");
       try {
-        if(!authAzad) return;
-        if(confirm("Kya aap Logout karna chahte hain?")) {
-          await signOut(authAzad);
-        }
+        await createUserWithEmailAndPassword(auth, email, pass);
       } catch (error) {
-        console.error("Logout Error: ", error);
-        showError("Signout broken sequence.");
+        showAuthError(error.message);
       }
+    };
+
+    window.handleGoogleLogin = async () => {
+      try {
+        await signInWithPopup(auth, googleProvider);
+      } catch (error) {
+        showAuthError(error.message);
+      }
+    };
+
+    window.handleLogout = async () => {
+      try {
+        await signOut(auth);
+        // Clear locally loaded UI
+        document.getElementById('categoriesContainer').innerHTML = '';
+        document.getElementById('coursesContainer').innerHTML = '';
+        document.getElementById('authEmail').value = '';
+        document.getElementById('authPassword').value = '';
+      } catch (error) {
+        showError("Error signing out.");
+      }
+    };
+
+    function showAuthError(message) {
+      const container = document.getElementById('authErrorContainer');
+      container.innerHTML = `
+        <div class="error-banner" style="margin-bottom: 12px; font-size: 11px; padding: 8px;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <span>${message}</span>
+        </div>`;
+      setTimeout(() => container.innerHTML = '', 5000);
     }
+    /* ------------------------------- */
 
     /**
      * Dynamically load category data
      */
     async function loadCategories() {
-      if(!dbAzad) return;
-      const categoriesRef = collection(dbAzad, "categories");
-      const q = query(categoriesRef, orderBy("order", "asc"));
-      const querySnapshot = await getDocs(q);
-      
-      localCategories = [];
-      querySnapshot.forEach((doc) => {
-        localCategories.push({ id: doc.id, ...doc.data() });
-      });
+      try {
+        const categoriesRef = collection(dbAzad, "categories");
+        const q = query(categoriesRef, orderBy("order", "asc"));
+        const querySnapshot = await getDocs(q);
+        
+        localCategories = [];
+        querySnapshot.forEach((doc) => {
+          localCategories.push({ id: doc.id, ...doc.data() });
+        });
+      } catch (error) {
+        console.error("Categories fetch failed: ", error);
+        throw error;
+      }
     }
 
     /**
      * Dynamically load course tracks
      */
     async function loadCourses() {
-      if(!dbAzad) return;
-      const coursesRef = collection(dbAzad, "courses");
-      const q = query(coursesRef, orderBy("createdAt", "desc"));
-      const querySnapshot = await getDocs(q);
-      
-      localCourses = [];
-      querySnapshot.forEach((doc) => {
-        localCourses.push({ id: doc.id, ...doc.data() });
-      });
+      try {
+        const coursesRef = collection(dbAzad, "courses");
+        const q = query(coursesRef, orderBy("createdAt", "desc"));
+        const querySnapshot = await getDocs(q);
+        
+        localCourses = [];
+        querySnapshot.forEach((doc) => {
+          localCourses.push({ id: doc.id, ...doc.data() });
+        });
+      } catch (error) {
+        console.error("Courses fetch failed: ", error);
+        throw error;
+      }
     }
 
     /**
      * Banner advertisement extraction directly mapped from the Bihar Sin project
      */
     async function fetchBannerAds() {
-      if(!dbBiharSin) return;
-      const adsCollection = collection(dbBiharSin, "artifacts", "bihar-sin-portal", "public", "data", "ads");
-      const q = query(adsCollection, where("isActive", "==", true));
-      const querySnapshot = await getDocs(q);
-      
-      adsList = [];
-      const todayStr = new Date().toISOString().split('T')[0];
-
-      querySnapshot.forEach((doc) => {
-        const data = doc.data();
-        const start = data.startDate || "0000-00-00";
-        const end = data.endDate || "9999-12-31";
+      try {
+        const adsCollection = collection(dbBiharSin, "artifacts", "bihar-sin-portal", "public", "data", "ads");
+        const q = query(adsCollection, where("isActive", "==", true));
+        const querySnapshot = await getDocs(q);
         
-        if (todayStr >= start && todayStr <= end && data.mediaUrl && !data.videoUrl) {
-          adsList.push(data);
-        }
-      });
+        adsList = [];
+        const todayStr = new Date().toISOString().split('T')[0];
 
-      if (adsList.length > 0) {
-        startAdRotation();
+        querySnapshot.forEach((doc) => {
+          const data = doc.data();
+          const start = data.startDate || "0000-00-00";
+          const end = data.endDate || "9999-12-31";
+          
+          if (todayStr >= start && todayStr <= end && data.mediaUrl && !data.videoUrl) {
+            adsList.push(data);
+          }
+        });
+
+        if (adsList.length > 0) {
+          startAdRotation();
+        }
+      } catch (error) {
+        console.warn("Bihar-sin integration bypass: ", error);
       }
     }
 
@@ -1152,7 +1142,6 @@
       renderAd(adIndex);
 
       if (adsList.length > 1) {
-        if(adInterval) clearInterval(adInterval);
         adInterval = setInterval(() => {
           adIndex = (adIndex + 1) % adsList.length;
           renderAd(adIndex);
@@ -1166,7 +1155,7 @@
     function renderAd(index) {
       const img = document.getElementById('adDisplayImg');
       const link = document.getElementById('adClickLink');
-      if (!img || !link || !adsList[index]) return;
+      if (!img || !link) return;
 
       const campaign = adsList[index];
       img.style.opacity = '0';
@@ -1195,8 +1184,7 @@
       if (iconName.includes('market') || iconName.includes('business') || iconName.includes('finance') || iconName.includes('seo')) {
         return `<svg class="category-icon-svg" viewBox="0 0 24 24"><path d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
       }
-      
-      return `<svg class="category-icon-svg" viewBox="0 0 24 24"><path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+      return `<svg class="category-icon-svg" viewBox="0 0 24 24"><path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
     }
 
     /**
@@ -1373,7 +1361,6 @@
 
       const modal = document.getElementById('courseModal');
       const videoSection = document.getElementById('modalVideoSection');
-      if(!modal || !videoSection) return;
       
       document.getElementById('modalHeaderTitle').innerText = `${course.title || 'Course Details'}`;
       document.getElementById('modalTitle').innerText = course.title || 'Untitled';
@@ -1407,15 +1394,15 @@
     function closeCourseModal() {
       const modal = document.getElementById('courseModal');
       const videoSection = document.getElementById('modalVideoSection');
-      if(!modal || !videoSection) return;
       
       modal.classList.remove('active');
       document.body.style.overflow = '';
+      
       videoSection.innerHTML = '';
     }
 
     /**
-     * Opens dynamic information dialog about the program
+     * Opens dynamic information dialog
      */
     function openAboutDialog() {
       showError("AZAD SKILL © 2026. Empowering career excellence through highly streamlined vertical learning tracks.");
@@ -1436,6 +1423,8 @@
       }
     }
 
+    function hideLoading(target) {}
+
     /**
      * System banner error updates
      */
@@ -1449,11 +1438,20 @@
           <span>${message}</span>
         </div>`;
       
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      setTimeout(() => {
+        container.innerHTML = '';
+      }, 7000);
     }
 
-    // Launch Driver Sequence safely
+    // Set Window scope functions for inline DOM click events
+    window.filterCourses = filterCourses;
+    window.openCourseModal = openCourseModal;
+    window.closeCourseModal = closeCourseModal;
+    window.openAboutDialog = openAboutDialog;
+
+    // Launch Driver
     window.addEventListener('DOMContentLoaded', initApp);
+
   </script>
 </body>
 </html>
