@@ -816,9 +816,21 @@
       <div class="logo-zone">
         <h1>AZAD SKILL</h1>
         <p>Learn Skills. Build Future.</p>
-      </div>
-      <button class="btn-primary" id="logoutBtn" onclick="window.handleLogout()" style="width: auto; padding: 6px 12px; font-size: 10px; display: none;">Logout</button>
-    </div>
+<div id="userProfile" style="display:none;align-items:center;gap:10px;">
+   <img id="userPhoto"
+        style="width:40px;height:40px;border-radius:50%;object-fit:cover;">
+   <button class="btn-primary"
+           onclick="window.handleLogout()">
+      Logout
+   </button>
+</div>
+
+<button class="btn-primary"
+        id="logoutBtn"
+        onclick="window.handleLogout()"
+        style="display:none;">
+   Logout
+</button>
   </header>
 
   <main class="container">
@@ -961,34 +973,52 @@
 
       // Check User Authentication State dynamically
       onAuthStateChanged(auth, async (user) => {
-        if (user) {
-          // Logged In: Hide Auth Modal and show Logout btn
-          document.getElementById('authOverlay').classList.remove('active');
-          document.getElementById('logoutBtn').style.display = 'inline-flex';
-          
-          showLoading('categories');
-          showLoading('courses');
 
-          try {
-            await Promise.all([
-              loadCategories(),
-              loadCourses(),
-              fetchBannerAds()
-            ]);
-            renderCategories();
-            renderCourses();
-          } catch (err) {
-            console.error("Connectivity Exception: ", err);
-            showError("Local databases parsing failure. Verify connection integrity.");
-            hideLoading('categories');
-            hideLoading('courses');
-          }
-        } else {
-          // Not Logged In: Show Auth Modal and hide Logout btn
-          document.getElementById('authOverlay').classList.add('active');
-          document.getElementById('logoutBtn').style.display = 'none';
-        }
-      });
+  const profileBox = document.getElementById("userProfile");
+  const photo = document.getElementById("userPhoto");
+
+  if (user) {
+
+    document.getElementById('authOverlay').classList.remove('active');
+
+    // Google Login
+    if (user.providerData[0]?.providerId === "google.com") {
+      profileBox.style.display = "flex";
+      photo.src = user.photoURL || "";
+      document.getElementById("logoutBtn").style.display = "none";
+    }
+
+    // Email Login
+    else {
+      profileBox.style.display = "none";
+      document.getElementById("logoutBtn").style.display = "inline-flex";
+    }
+
+    showLoading('categories');
+    showLoading('courses');
+
+    try {
+      await Promise.all([
+        loadCategories(),
+        loadCourses(),
+        fetchBannerAds()
+      ]);
+
+      renderCategories();
+      renderCourses();
+
+    } catch (err) {
+      console.error(err);
+    }
+
+  } else {
+
+    document.getElementById('authOverlay').classList.add('active');
+
+    profileBox.style.display = "none";
+    document.getElementById("logoutBtn").style.display = "none";
+  }
+});
     }
 
     /**
