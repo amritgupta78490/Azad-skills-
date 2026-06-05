@@ -783,6 +783,9 @@
       from { transform: scale(0.9) translateY(10px); opacity: 0; }
       to { transform: scale(1) translateY(0); opacity: 1; }
     }
+    #logoutBtn{
+  margin-left:auto;
+    }
   </style>
 </head>
 <body>
@@ -810,28 +813,34 @@
   </div>
 
   <img src="https://i.ibb.co/NdNntcXc/ashok-chakra-e1426766122112.png" alt="Ashoka Chakra Background" class="chakra-bg">
+<header>
+  <div class="container header-content">
 
-  <header>
-    <div class="container header-content">
-      <div class="logo-zone">
-        <h1>AZAD SKILL</h1>
-        <p>Learn Skills. Build Future.</p>
-<div id="userProfile" style="display:none;align-items:center;gap:10px;">
-   <img id="userPhoto"
-        style="width:40px;height:40px;border-radius:50%;object-fit:cover;">
-   <button class="btn-primary"
-           onclick="window.handleLogout()">
+    <div class="logo-zone">
+      <h1>AZAD SKILL</h1>
+      <p>Learn Skills. Build Future.</p>
+    </div>
+
+    <!-- Right Side User Area -->
+    <div id="userProfile" style="display:none;align-items:center;gap:10px;">
+      <img id="userPhoto"
+           style="width:40px;height:40px;border-radius:50%;object-fit:cover;">
+      <button class="btn-primary"
+              onclick="window.handleLogout()">
+        Logout
+      </button>
+    </div>
+
+    <button class="btn-primary"
+            id="logoutBtn"
+            onclick="window.handleLogout()"
+            style="display:none;">
       Logout
-   </button>
-</div>
+    </button>
 
-<button class="btn-primary"
-        id="logoutBtn"
-        onclick="window.handleLogout()"
-        style="display:none;">
-   Logout
-</button>
-  </header>
+  </div>
+</header>
+  
 
   <main class="container">
     
