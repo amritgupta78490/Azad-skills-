@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Progress Tracking - AZAD SKILL</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet">
+
+  <style>
+    /* ==========================================================================
+       1. PLAYFUL CARTOON DESIGN SYSTEM VARIABLES & RESETS
+       ========================================================================== */
+    :root {
+      --primary: #2563eb; 
+      --primary-soft: #dbeafe; 
+      --success: #16a34a;
+      --success-soft: #dcfce7;
+      --warning: #ca8a04;
+      --warning-soft: #fef08a;
+      --background: #f8fafc;
+      --surface: #ffffff;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --border-color: #0f172a;
+      --border-width: 2.5px;
+      --radius-sm: 12px;
+      --radius-md: 20px;
+      --radius-lg: 32px;
+      --shadow-cartoon: 4px 4px 0px #0f172a;
+      --shadow-cartoon-hover: 7px 7px 0px #0f172a;
+      --shadow-cartoon-press: 2px 2px 0px #0f172a;
+      --transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body {
+      background-color: var(--background);
+      color: var(--text-main);
+      line-height: 1.5;
+      padding-top: 90px;
+      padding-bottom: 100px;
+      overflow-x: hidden;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 20px;
+    }
+
+    /* ==========================================================================
+       2. HEADER
+       ========================================================================== */
+    header {
+      position: fixed;
+      top: 12px;
+      left: 12px;
+      right: 12px;
+      height: 65px;
+      background: var(--surface);
+      border: var(--border-width) solid var(--border-color);
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-cartoon);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+    }
+
+    .header-content {
+      display: flex;
+      align-items: center;
+      width: 100%;
+      padding: 0 16px;
+      gap: 12px;
+    }
+
+    .back-btn {
+      background: var(--surface);
+      border: var(--border-width) solid var(--border-color);
+      width: 36px;
+      height: 36px;
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: var(--text-main);
+      transition: var(--transition);
+      box-shadow: 2px 2px 0px var(--border-color);
+    }
+
+    .back-btn:hover {
+      transform: translate(-1px, -1px);
+      box-shadow: 3px 3px 0px var(--border-color);
+    }
+
+    .header-title {
+      font-size: 18px;
+      font-weight: 900;
+      color: var(--primary);
+      text-transform: uppercase;
+      letter-spacing: -0.5px;
+    }
+
+    /* ==========================================================================
+       3. REUSABLE COMPONENTS (CARDS, BUTTONS, BADGES)
+       ========================================================================== */
+    .section-title {
+      font-size: 18px;
+      font-weight: 900;
+      margin: 24px 0 16px 0;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-transform: uppercase;
+    }
+
+    .card {
+      background: var(--surface);
+      border: var(--border-width) solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      box-shadow: var(--shadow-cartoon);
+      margin-bottom: 16px;
+      transition: var(--transition);
+    }
+
+    .card:hover {
+      transform: translate(-2px, -2px);
+      box-shadow: var(--shadow-cartoon-hover);
+    }
+
+    .btn-primary, .btn-secondary {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      border: var(--border-width) solid var(--border-color);
+      padding: 10px 16px;
+      font-size: 13px;
+      font-weight: 900;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: var(--transition);
+      box-shadow: 2px 2px 0px var(--border-color);
+      text-transform: uppercase;
+      text-decoration: none;
+    }
+
+    .btn-primary { background: var(--primary); color: #ffffff; }
+    .btn-primary:hover { background: #1d4ed8; transform: translate(-1px, -1px); box-shadow: 3px 3px 0px var(--border-color); }
+    .btn-primary:active { transform: translate(1px, 1px); box-shadow: 1px 1px 0px var(--border-color); }
+
+    .btn-secondary { background: var(--warning-soft); color: var(--text-main); }
+    .btn-secondary:hover { background: #fde047; transform: translate(-1px, -1px); box-shadow: 3px 3px 0px var(--border-color); }
+
+    .badge {
+      font-size: 10px;
+      font-weight: 900;
+      padding: 4px 8px;
+      border-radius: var(--radius-sm);
+      text-transform: uppercase;
+      border: 1.5px solid var(--border-color);
+      box-shadow: 2px 2px 0px var(--border-color);
+      display: inline-block;
+    }
+
+    /* ==========================================================================
+       4. PROGRESS BAR SYSTEM
+       ========================================================================== */
+    .progress-container {
+      width: 100%;
+      margin: 12px 0;
+    }
+
+    .progress-header {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      font-weight: 800;
+      margin-bottom: 6px;
+    }
+
+    .progress-track {
+      width: 100%;
+      height: 12px;
+      background: var(--background);
+      border: 2px solid var(--border-color);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: var(--primary);
+      border-right: 2px solid var(--border-color);
+      transition: width 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .progress-fill.completed { background: var(--success); }
+
+    /* ==========================================================================
+       5. SPECIFIC SECTIONS (OVERVIEW, STREAK, COURSE LIST)
+       ========================================================================== */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+
+    .stat-box {
+      background: var(--primary-soft);
+      border: var(--border-width) solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      text-align: center;
+      box-shadow: var(--shadow-cartoon);
+    }
+
+    .stat-box.success { background: var(--success-soft); }
+    .stat-box h3 { font-size: 28px; font-weight: 900; color: var(--text-main); margin-bottom: 4px; }
+    .stat-box p { font-size: 11px; font-weight: 800; text-transform: uppercase; color: var(--text-muted); }
+
+    .streak-container {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .streak-icon {
+      animation: pulse 2s infinite;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .course-list-item {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .course-thumbnail {
+      width: 80px;
+      height: 80px;
+      border-radius: var(--radius-sm);
+      border: 2px solid var(--border-color);
+      object-fit: cover;
+      background: var(--primary-soft);
+    }
+
+    .course-info { flex: 1; }
+    .course-title { font-size: 15px; font-weight: 800; margin-bottom: 4px; }
+    
+    /* ==========================================================================
+       6. BOTTOM NAV
+       ========================================================================== */
+    .bottom-nav {
+      position: fixed;
+      bottom: 12px;
+      left: 12px;
+      right: 12px;
+      height: 65px;
+      background: var(--surface);
+      border: var(--border-width) solid var(--border-color);
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-cartoon);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: space-around;
+    }
+
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 11px;
+      font-weight: 800;
+      transition: var(--transition);
+    }
+
+    .nav-item svg {
+      width: 22px;
+      height: 22px;
+      stroke: currentColor;
+      stroke-width: 2.5;
+      fill: none;
+      margin-bottom: 2px;
+    }
+
+    .nav-item.active { color: var(--primary); }
+
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+      100% { transform: scale(1); }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="header-content">
+      <button class="back-btn" onclick="window.history.back()" aria-label="Go Back">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      </button>
+      <div class="header-title">My Progress</div>
+    </div>
+  </header>
+
+  <main class="container">
+    
+    <h3 class="section-title">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+      Overview
+    </h3>
+    <div class="stats-grid">
+      <div class="stat-box">
+        <h3 id="statEnrolled">0</h3>
+        <p>Enrolled</p>
+      </div>
+      <div class="stat-box">
+        <h3 id="statCompleted">0</h3>
+        <p>Completed</p>
+      </div>
+      <div class="stat-box success">
+        <h3 id="statCertificates">0</h3>
+        <p>Certificates</p>
+      </div>
+      <div class="stat-box success">
+        <h3 id="statOverall">0%</h3>
+        <p>Overall Progress</p>
+      </div>
+    </div>
+
+    <h3 class="section-title">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--warning)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0011 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 11-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 002.5 2.5z"></path></svg>
+      Learning Streak
+    </h3>
+    <div class="card streak-container">
+      <div class="streak-icon">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--warning)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0011 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 11-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 002.5 2.5z"></path></svg>
+      </div>
+      <div>
+        <h4 style="font-weight: 900; font-size: 16px;">Keep it up!</h4>
+        <p style="font-size: 13px; color: var(--text-muted); font-weight: 600;">
+          Current Streak: <strong id="currentStreak" style="color: var(--warning);">0 Days</strong><br>
+          Longest Streak: <strong id="longestStreak">0 Days</strong>
+        </p>
+      </div>
+    </div>
+
+    <h3 class="section-title">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--text-main)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+      My Courses
+    </h3>
+    <div id="courseListContainer">
+    </div>
+
+    <h3 class="section-title">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="7"></circle><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline></svg>
+      Certificates
+    </h3>
+    <div id="certificatesContainer">
+    </div>
+
+  </main>
+
+  <nav class="bottom-nav">
+    <a href="index.html" class="nav-item">
+      <svg viewBox="0 0 24 24"><path d="M3 12l9-9 9 9M5 10v10a1 1 0 001 1h3m10-11v11a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Home
+    </a>
+    <a href="ProgressTracking.html" class="nav-item active">
+      <svg viewBox="0 0 24 24"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path><polyline points="13 2 13 9 20 9"></polyline></svg>
+      Progress
+    </a>
+  </nav>
+
+  <script>
+    /* ==========================================================================
+       8. FIREBASE INTEGRATION PLACEHOLDERS & LOCAL STORAGE ENGINE
+       ========================================================================== */
+    
+    // Initial Working Data Structure (Simulating Database)
+    const defaultData = {
+      userStats: { currentStreak: 3, longestStreak: 7 },
+      courses: [
+        { id: 'c1', title: 'Web Development Bootcamp', category: 'Coding', level: 'Beginner', totalLessons: 20, completedLessons: 12, status: 'In Progress' },
+        { id: 'c2', title: 'UI/UX Design Masterclass', category: 'Design', level: 'Intermediate', totalLessons: 15, completedLessons: 15, status: 'Completed' },
+        { id: 'c3', title: 'Digital Marketing 101', category: 'Marketing', level: 'Beginner', totalLessons: 10, completedLessons: 0, status: 'Not Started' }
+      ]
+    };
+
+    // Firebase Placeholders
+    async function loadUserProgressFromFirebase() { /* TODO: Connect to Firestore */ }
+    async function saveUserProgressToFirebase() { /* TODO: Connect to Firestore */ }
+    async function generateCertificateFromFirebase() { /* TODO: Trigger Cloud Function */ }
+
+    // Local Storage Engine (Makes the page actively work right now)
+    function loadData() {
+      const stored = localStorage.getItem('azad_user_progress');
+      return stored ? JSON.parse(stored) : defaultData;
+    }
+
+    function saveData(data) {
+      localStorage.setItem('azad_user_progress', JSON.stringify(data));
+      renderDashboard(); // Re-render UI on data change
+    }
+
+    // Action function to simulate learning progression
+    window.markLessonCompleted = function(courseId) {
+      const data = loadData();
+      const course = data.courses.find(c => c.id === courseId);
+      
+      if (course && course.completedLessons < course.totalLessons) {
+        course.completedLessons += 1;
+        course.status = 'In Progress';
+        
+        if (course.completedLessons === course.totalLessons) {
+          course.status = 'Completed';
+        }
+        
+        // Simulate streak update
+        data.userStats.currentStreak += 1;
+        if(data.userStats.currentStreak > data.userStats.longestStreak) {
+          data.userStats.longestStreak = data.userStats.currentStreak;
+        }
+
+        saveData(data);
+        saveUserProgressToFirebase(); // Placeholder trigger
+      }
+    };
+
+    /* ==========================================================================
+       9. UI RENDERING LOGIC
+       ========================================================================== */
+    
+    function renderDashboard() {
+      const data = loadData();
+      
+      // 1. Calculate and Render Overview Stats
+      const enrolled = data.courses.length;
+      const completed = data.courses.filter(c => c.status === 'Completed').length;
+      let totalLessons = 0;
+      let totalCompletedLessons = 0;
+      
+      data.courses.forEach(c => {
+        totalLessons += c.totalLessons;
+        totalCompletedLessons += c.completedLessons;
+      });
+      
+      const overallProgress = totalLessons === 0 ? 0 : Math.round((totalCompletedLessons / totalLessons) * 100);
+
+      document.getElementById('statEnrolled').innerText = enrolled;
+      document.getElementById('statCompleted').innerText = completed;
+      document.getElementById('statCertificates').innerText = completed; // 1 cert per completed course
+      document.getElementById('statOverall').innerText = `${overallProgress}%`;
+
+      // 2. Render Streak
+      document.getElementById('currentStreak').innerText = `${data.userStats.currentStreak} Days`;
+      document.getElementById('longestStreak').innerText = `${data.userStats.longestStreak} Days`;
+
+      // 3. Render Course List & Continue Learning
+      const coursesHTML = data.courses.map(course => {
+        const progressPct = Math.round((course.completedLessons / course.totalLessons) * 100);
+        const isCompleted = progressPct === 100;
+        const progressClass = isCompleted ? 'completed' : '';
+        const badgeColor = isCompleted ? 'background: var(--success-soft); color: var(--success);' : 'background: var(--warning-soft); color: var(--warning);';
+
+        return `
+          <div class="card">
+            <div class="course-list-item">
+              <div class="course-thumbnail"></div>
+              <div class="course-info">
+                <div style="display:flex; justify-content:space-between;">
+                  <span class="badge" style="background: var(--primary-soft); color: var(--primary); margin-bottom: 8px;">${course.category}</span>
+                  <span class="badge" style="${badgeColor}">${course.status}</span>
+                </div>
+                <h4 class="course-title">${course.title}</h4>
+                
+                <div class="progress-container">
+                  <div class="progress-header">
+                    <span>Progress</span>
+                    <span>${progressPct}%</span>
+                  </div>
+                  <div class="progress-track">
+                    <div class="progress-fill ${progressClass}" style="width: ${progressPct}%"></div>
+                  </div>
+                </div>
+
+                ${!isCompleted ? `
+                  <button class="btn-primary" style="width: 100%; margin-top: 8px;" onclick="markLessonCompleted('${course.id}')">
+                    Complete Next Lesson
+                  </button>
+                ` : `
+                  <p style="font-size: 13px; font-weight: 800; color: var(--success); text-align: center; margin-top: 8px; display: flex; align-items: center; justify-content: center; gap: 6px;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                    Course Mastered!
+                  </p>
+                `}
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+      document.getElementById('courseListContainer').innerHTML = coursesHTML;
+
+      // 4. Render Certificates
+      const completedCourses = data.courses.filter(c => c.status === 'Completed');
+      const certHTML = completedCourses.length > 0 ? completedCourses.map(course => `
+        <div class="card" style="display: flex; justify-content: space-between; align-items: center;">
+          <div>
+            <h4 style="font-size: 14px; font-weight: 800;">${course.title}</h4>
+            <p style="font-size: 11px; color: var(--text-muted); font-weight: 700;">Issued on Completion</p>
+          </div>
+          <button class="btn-secondary" onclick="alert('Certificate download triggered!')">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+            Save
+          </button>
+        </div>
+      `).join('') : `<p style="font-size: 13px; color: var(--text-muted); text-align: center; font-weight: 700;">Complete a course to earn your first certificate!</p>`;
+      
+      document.getElementById('certificatesContainer').innerHTML = certHTML;
+    }
+
+    // Initialize Dashboard on Load
+    document.addEventListener('DOMContentLoaded', () => {
+      // Ensure default data exists if user visits for the first time
+      if(!localStorage.getItem('azad_user_progress')) {
+        saveData(defaultData);
+      } else {
+        renderDashboard();
+      }
+    });
+  </script>
+</body>
+</html>
