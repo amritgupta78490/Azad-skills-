@@ -7,7 +7,7 @@
   
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght=400;600;800;900&display=swap" rel="stylesheet">
 
   <style>
     /* ==========================================================================
@@ -259,6 +259,10 @@
       border: 2px solid var(--border-color);
       object-fit: cover;
       background: var(--primary-soft);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
     }
 
     .course-info { flex: 1; }
@@ -392,69 +396,102 @@
     </a>
   </nav>
 
-  <script>
-    /* ==========================================================================
-       8. FIREBASE INTEGRATION PLACEHOLDERS & LOCAL STORAGE ENGINE
-       ========================================================================== */
-    
-    // Initial Working Data Structure (Simulating Database)
-    const defaultData = {
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getFirestore, doc, getDoc, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+    // TODO: Apne real project ke configuration credentials yahan add karein
+    const firebaseConfigAzad = {
+      apiKey: "AIzaSyDyeQAYlc2h7vX8Z_9FZn4MquIKshwWWyk",
+      authDomain: "azad-skill.firebaseapp.com",
+      projectId: "azad-skill",
+      storageBucket: "azad-skill.firebasestorage.app",
+      messagingSenderId: "465099025771",
+      appId: "1:465099025771:web:7dec7d1c2b763df7a6302e",
+      measurementId: "G-DWXGCCER27"
+    };
+
+
+    // Firebase App aur Firestore Database Initialize karein
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    // Dynamic user tracking identifier (Aap isme unique authentic user-id store kar sakte hain)
+    const activeUserId = "user_azad_skill_default";
+
+    // Initial schema document structure agar user backend me bilkul naya hai
+    const initialSchema = {
       userStats: { currentStreak: 3, longestStreak: 7 },
       courses: [
-        { id: 'c1', title: 'Web Development Bootcamp', category: 'Coding', level: 'Beginner', totalLessons: 20, completedLessons: 12, status: 'In Progress' },
-        { id: 'c2', title: 'UI/UX Design Masterclass', category: 'Design', level: 'Intermediate', totalLessons: 15, completedLessons: 15, status: 'Completed' },
-        { id: 'c3', title: 'Digital Marketing 101', category: 'Marketing', level: 'Beginner', totalLessons: 10, completedLessons: 0, status: 'Not Started' }
+        { id: 'c1', title: 'Web Development Bootcamp', category: 'Coding', icon: '💻', level: 'Beginner', totalLessons: 20, completedLessons: 12, status: 'In Progress' },
+        { id: 'c2', title: 'UI/UX Design Masterclass', category: 'Design', icon: '🎨', level: 'Intermediate', totalLessons: 15, completedLessons: 15, status: 'Completed' },
+        { id: 'c3', title: 'Digital Marketing 101', category: 'Marketing', icon: '📈', level: 'Beginner', totalLessons: 10, completedLessons: 0, status: 'Not Started' }
       ]
     };
 
-    // Firebase Placeholders
-    async function loadUserProgressFromFirebase() { /* TODO: Connect to Firestore */ }
-    async function saveUserProgressToFirebase() { /* TODO: Connect to Firestore */ }
-    async function generateCertificateFromFirebase() { /* TODO: Trigger Cloud Function */ }
+    let globalState = null;
 
-    // Local Storage Engine (Makes the page actively work right now)
-    function loadData() {
-      const stored = localStorage.getItem('azad_user_progress');
-      return stored ? JSON.parse(stored) : defaultData;
+    // Real-time Cloud Firestore Database Sync Module
+    async function syncDatabaseState() {
+      try {
+        const docRef = doc(db, "users", activeUserId);
+        const snapshot = await getDoc(docRef);
+
+        if (snapshot.exists()) {
+          globalState = snapshot.data();
+        } else {
+          // Live fallback create karein database document container par
+          await setDoc(docRef, initialSchema);
+          globalState = initialSchema;
+        }
+        renderLiveDashboard(globalState);
+      } catch (err) {
+        console.warn("Backend configuration missing/offline, loading fallback local instance state:", err);
+        globalState = initialSchema;
+        renderLiveDashboard(globalState);
+      }
     }
 
-    function saveData(data) {
-      localStorage.setItem('azad_user_progress', JSON.stringify(data));
-      renderDashboard(); // Re-render UI on data change
-    }
+    // Interactive Action Module live update push karne ke liye
+    window.markLessonCompleted = async function(courseId) {
+      if (!globalState) return;
 
-    // Action function to simulate learning progression
-    window.markLessonCompleted = function(courseId) {
-      const data = loadData();
-      const course = data.courses.find(c => c.id === courseId);
+      const targetCourse = globalState.courses.find(c => c.id === courseId);
       
-      if (course && course.completedLessons < course.totalLessons) {
-        course.completedLessons += 1;
-        course.status = 'In Progress';
+      if (targetCourse && targetCourse.completedLessons < targetCourse.totalLessons) {
+        targetCourse.completedLessons += 1;
+        targetCourse.status = 'In Progress';
         
-        if (course.completedLessons === course.totalLessons) {
-          course.status = 'Completed';
+        if (targetCourse.completedLessons === targetCourse.totalLessons) {
+          targetCourse.status = 'Completed';
         }
         
-        // Simulate streak update
-        data.userStats.currentStreak += 1;
-        if(data.userStats.currentStreak > data.userStats.longestStreak) {
-          data.userStats.longestStreak = data.userStats.currentStreak;
+        // Live stream update values calculation
+        globalState.userStats.currentStreak += 1;
+        if(globalState.userStats.currentStreak > globalState.userStats.longestStreak) {
+          globalState.userStats.longestStreak = globalState.userStats.currentStreak;
         }
 
-        saveData(data);
-        saveUserProgressToFirebase(); // Placeholder trigger
+        // Instant application response update
+        renderLiveDashboard(globalState);
+
+        // Async write changes to dynamic firestore document endpoint
+        try {
+          const docRef = doc(db, "users", activeUserId);
+          await updateDoc(docRef, {
+            courses: globalState.courses,
+            userStats: globalState.userStats
+          });
+        } catch (dbError) {
+          console.error("Cloud Database Sync Failure: ", dbError);
+        }
       }
     };
 
     /* ==========================================================================
        9. UI RENDERING LOGIC
        ========================================================================== */
-    
-    function renderDashboard() {
-      const data = loadData();
-      
-      // 1. Calculate and Render Overview Stats
+    function renderLiveDashboard(data) {
       const enrolled = data.courses.length;
       const completed = data.courses.filter(c => c.status === 'Completed').length;
       let totalLessons = 0;
@@ -469,14 +506,12 @@
 
       document.getElementById('statEnrolled').innerText = enrolled;
       document.getElementById('statCompleted').innerText = completed;
-      document.getElementById('statCertificates').innerText = completed; // 1 cert per completed course
+      document.getElementById('statCertificates').innerText = completed;
       document.getElementById('statOverall').innerText = `${overallProgress}%`;
 
-      // 2. Render Streak
       document.getElementById('currentStreak').innerText = `${data.userStats.currentStreak} Days`;
       document.getElementById('longestStreak').innerText = `${data.userStats.longestStreak} Days`;
 
-      // 3. Render Course List & Continue Learning
       const coursesHTML = data.courses.map(course => {
         const progressPct = Math.round((course.completedLessons / course.totalLessons) * 100);
         const isCompleted = progressPct === 100;
@@ -486,7 +521,7 @@
         return `
           <div class="card">
             <div class="course-list-item">
-              <div class="course-thumbnail"></div>
+              <div class="course-thumbnail">${course.icon || '📚'}</div>
               <div class="course-info">
                 <div style="display:flex; justify-content:space-between;">
                   <span class="badge" style="background: var(--primary-soft); color: var(--primary); margin-bottom: 8px;">${course.category}</span>
@@ -505,7 +540,7 @@
                 </div>
 
                 ${!isCompleted ? `
-                  <button class="btn-primary" style="width: 100%; margin-top: 8px;" onclick="markLessonCompleted('${course.id}')">
+                  <button class="btn-primary" style="width: 100%; margin-top: 8px;" onclick="window.markLessonCompleted('${course.id}')">
                     Complete Next Lesson
                   </button>
                 ` : `
@@ -521,7 +556,6 @@
       }).join('');
       document.getElementById('courseListContainer').innerHTML = coursesHTML;
 
-      // 4. Render Certificates
       const completedCourses = data.courses.filter(c => c.status === 'Completed');
       const certHTML = completedCourses.length > 0 ? completedCourses.map(course => `
         <div class="card" style="display: flex; justify-content: space-between; align-items: center;">
@@ -529,7 +563,7 @@
             <h4 style="font-size: 14px; font-weight: 800;">${course.title}</h4>
             <p style="font-size: 11px; color: var(--text-muted); font-weight: 700;">Issued on Completion</p>
           </div>
-          <button class="btn-secondary" onclick="alert('Certificate download triggered!')">
+          <button class="btn-secondary" onclick="alert('Certificate download triggered for ${course.title}!')">
             <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
             Save
           </button>
@@ -539,14 +573,9 @@
       document.getElementById('certificatesContainer').innerHTML = certHTML;
     }
 
-    // Initialize Dashboard on Load
+    // Initialization trigger
     document.addEventListener('DOMContentLoaded', () => {
-      // Ensure default data exists if user visits for the first time
-      if(!localStorage.getItem('azad_user_progress')) {
-        saveData(defaultData);
-      } else {
-        renderDashboard();
-      }
+      syncDatabaseState();
     });
   </script>
 </body>
